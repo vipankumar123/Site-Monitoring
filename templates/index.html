@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .domain-info {
+            margin-bottom: 20px;
+        }
+        .subdomain-list {
+            margin-top: 10px;
+            padding-left: 20px;
+            list-style-type: square;
+        }
+    </style>
+</head>
+<body>
+    <h1>Domain Information</h1>
+    <form id="domainForm">
+        <input type="text" id="domainInput" placeholder="Enter domain (e.g., example.com)" required>
+        <button type="submit">Get Info</button>
+    </form>
+    <div id="result"></div>
+    
+</body>
+<script>
+    document.getElementById('domainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const domain = document.getElementById('domainInput').value;
+
+        console.log(domain);
+
+        const ageResponse = await fetch(`/website-age/?domain=${domain}`);
+        const subdomainResponse = await fetch(`/find_subdomains/${domain}`);
+
+        const ageData = await ageResponse.json();
+        const subdomainData = await subdomainResponse.json();
+        
+        // Clear previous results
+        document.getElementById('result').innerHTML = '';
+
+        // Create and display website age information
+        if (ageData.domain) {
+            document.getElementById('result').innerHTML += `
+                <div class="domain-info">
+                    <h2>Website Age:</h2>
+                    <p><strong>Domain:</strong> ${ageData.domain}</p>
+                    <p><strong>Creation Date:</strong> ${ageData.creation_date}</p>
+                    <p><strong>Age in Days:</strong> ${ageData.age_in_days}</p>
+                    <p><strong>Age in Years:</strong> ${ageData.age_in_years}</p>
+                </div>
+            `;
+        } else {
+            document.getElementById('result').innerHTML += `
+                <div class="domain-info">
+                    <h2>Error:</h2>
+                    <p>${ageData.detail}</p>
+                </div>
+            `;
+        }
+
+        // Create and display subdomains
+        document.getElementById('result').innerHTML += `
+            <h2>Subdomains:</h2>
+            <ul class="subdomain-list">
+                ${subdomainData.subdomains ? subdomainData.subdomains.map(sub => `<li>${sub}</li>`).join('') : `<li>${subdomainData.error}</li>`}
+            </ul>
+        `;
+        });
+</script>
+
+</html>
